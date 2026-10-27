@@ -1,0 +1,22 @@
+name: export-arm64-tar
+on:
+  workflow_dispatch:
+permissions:
+  contents: write
+  packages: read
+jobs:
+  export:
+    runs-on: ubuntu-24.04-arm
+    steps:
+      - name: 从 ghcr 拉取并导出 tar
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+          docker pull ghcr.io/xiaoletian64/peach:arm64
+          docker save ghcr.io/xiaoletian64/peach:arm64 | gzip > peach-arm64.tar.gz
+          ls -lh peach-arm64.tar.gz
+      - uses: softprops/action-gh-release@v2
+        with:
+          tag_name: peach-arm64
+          name: peach-arm64 image
+          body: arm64 docker image tarball (docker load < peach-arm64.tar.gz)
+          files: peach-arm64.tar.gz
